@@ -1,0 +1,10 @@
+# local tooling and test leftovers
+.claude/
+.playwright-mcp/
+__pycache__/
+*.log
+
+# operating system files
+.DS_Store
+Thumbs.db
+desktop.ini

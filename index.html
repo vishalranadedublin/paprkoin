@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>PaprKoin: turn your words into a journey</title>
+  <meta name="description" content="Type a note of up to 200 characters, key by key, and PaprKoin delivers it somewhere on Earth.">
+  <meta name="theme-color" content="#DCE6EC">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anybody:ital,wdth,wght@0,50..150,100..900;1,50..150,100..900&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css?v=82">
+  <script>
+    (function () {
+      var d = document.documentElement, t = null;
+      d.classList.replace('no-js', 'js');
+      try { t = localStorage.getItem('pk.theme'); } catch (e) { /* storage blocked */ }
+      if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      d.dataset.theme = t;
+    })();
+  </script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "topojson-client": "https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/+esm",
+      "d3-geo": "https://cdn.jsdelivr.net/npm/d3-geo@3.1.1/+esm"
+    }
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="paper-grain" aria-hidden="true"></div>
+
+  <!-- ================================ NAV ================================ -->
+  <header class="nav" id="nav">
+    <a href="#home" class="brand" aria-label="PaprKoin, back to top">
+      <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
+        <circle cx="24" cy="24" r="21" fill="none" stroke="currentColor" stroke-width="2"/>
+        <circle cx="24" cy="24" r="16" fill="none" stroke="currentColor" stroke-width="1"/>
+        <path d="M19 32V16h6.2a4.6 4.6 0 0 1 0 9.2H19" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M2 30c4-2 6 2 10 0M36 30c4-2 6 2 10 0" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      <span class="brand-word">PaprKoin</span>
+    </a>
+
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#home" data-nav="home">Home</a>
+      <a href="#how" data-nav="how">How it works</a>
+      <a href="#destinations" data-nav="destinations">Destinations</a>
+      <a href="#plan" data-nav="plan">Koin Plan</a>
+      <a href="#about" data-nav="about">About PaprKoin</a>
+      <a href="#faq" data-nav="faq">FAQ</a>
+      <a href="#contact" data-nav="contact">Contact</a>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false" aria-label="Dark mode">
+        <span class="tt-knob" aria-hidden="true">
+          <svg class="tt-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
+          <svg class="tt-moon" viewBox="0 0 24 24"><path d="M19.5 14.6A8 8 0 0 1 9.4 4.5a8 8 0 1 0 10.1 10.1Z"/></svg>
+        </span>
+      </button>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="theme-toggle tt-compact" type="button" data-theme-toggle aria-pressed="false" aria-label="Dark mode">
+        <span class="tt-knob" aria-hidden="true">
+          <svg class="tt-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
+          <svg class="tt-moon" viewBox="0 0 24 24"><path d="M19.5 14.6A8 8 0 0 1 9.4 4.5a8 8 0 1 0 10.1 10.1Z"/></svg>
+        </span>
+      </button>
+      <button class="btn-signin signed-out" type="button" data-auth><span class="bs-paper"><svg class="bs-key" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3M21 12v2"/></svg><span>Sign in</span></span></button>
+      <div class="acct signed-in" id="acct">
+        <button class="acct-chip" type="button" id="acctBtn" aria-haspopup="true" aria-expanded="false" aria-controls="acctMenu">
+          <span class="acct-av" aria-hidden="true"><img alt="" id="acctImg" hidden><span id="acctIni">P</span></span>
+          <span class="acct-name" id="acctName">You</span>
+        </button>
+        <div class="acct-menu" id="acctMenu" hidden>
+          <p class="acct-who"><b id="acctFull">You</b><span id="acctEmail"></span><span class="acct-via" id="acctVia"></span></p>
+          <button class="acct-out" type="button" data-signout>Sign out</button>
+        </div>
+      </div>
+      <button class="nav-burger" type="button" aria-expanded="false" aria-controls="mobileMenu" aria-label="Open menu"><span></span><span></span></button>
+    </div>
+  </header>
+
+  <div class="mobile-menu" id="mobileMenu" hidden>
+    <nav aria-label="Mobile">
+      <a href="#home">Home</a>
+      <a href="#how">How it works</a>
+      <a href="#destinations">Destinations</a>
+      <a href="#plan">Koin Plan</a>
+      <a href="#about">About PaprKoin</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="mobile-menu-actions">
+      <button class="btn-signin signed-out" type="button" data-auth><span class="bs-paper"><svg class="bs-key" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3M21 12v2"/></svg><span>Sign in</span></span></button>
+      <p class="mm-who signed-in">Signed in as <b data-acct-name>you</b></p>
+      <button class="btn-pen signed-in" type="button" data-signout><span>Sign out</span><svg viewBox="0 0 80 10" preserveAspectRatio="none" aria-hidden="true"><path d="M2 6c10-4 18 3 28-1s17-3 26 1 14-2 22-1"/></svg></button>
+    </div>
+  </div>
+
+  <main id="main">
+    <!-- ================================ HERO ================================ -->
+    <section id="home" class="hero" data-section>
+      <div class="hero-sticky">
+        <h1 class="hero-title" aria-label="Turn Your Words Into a Journey">
+          <span class="ht ht-1" aria-hidden="true">Turn Your Words</span>
+          <span class="ht ht-2" aria-hidden="true">Into a Journey</span>
+        </h1>
+
+
+        <div class="globe-stage" id="globeStage">
+          <canvas id="globe"></canvas>
+          <div class="globe-labels" id="globeLabels" aria-hidden="true"></div>
+          <div class="lockon" id="postmark" data-visible="false" aria-hidden="true">
+            <svg class="lo-reticle" viewBox="-60 -60 120 120">
+              <path class="lo-brackets" d="M-46 -26v-20h20M26 -46h20v20M46 26v20h-20M-26 46h-20v-20"/>
+              <path class="lo-ticks" d="M0 -34v-10M0 34v10M-34 0h-10M34 0h10"/>
+              <circle class="lo-ring" r="18"/>
+            </svg>
+            <div class="lo-label">
+              <span class="lo-city" id="pmCity">Your town</span>
+              <span class="lo-coords" id="pmCoords">00.0000° N, 00.0000° W</span>
+            </div>
+          </div>
+          <div class="globe-fallback" aria-hidden="true"></div>
+        </div>
+
+        <div class="hero-status">
+          <p class="locate" aria-live="polite"><span class="locate-dot" aria-hidden="true"></span><span id="locateText">Finding where you are</span></p>
+          <button class="btn-exact" type="button" id="exactBtn" data-exact hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.2"/><path d="M12 1.5v4M12 18.5v4M1.5 12h4M18.5 12h4"/></svg>
+            <span>Not right? Use my exact location</span>
+          </button>
+          <p class="scroll-hint" id="scrollHint">Scroll to zoom in on you
+            <svg viewBox="0 0 16 24" aria-hidden="true"><path d="M8 2v18M2 14l6 6 6-6"/></svg>
+          </p>
+        </div>
+
+        <!-- postcard composer -->
+        <form class="cipher is-idle" id="composer" novalidate inert>
+          <div class="cx-card" id="pcCard">
+            <div class="cx-face cx-front">
+              <header class="cx-head">
+                <span class="cx-seal" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10" rx="1.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/><path d="M12 14.5v2.5"/></svg>
+                </span>
+                <div class="cx-titles">
+                  <label class="cx-title" for="note" data-decode>Write your message</label>
+                  <p class="cx-sub">Write a message, choose a Koin, and watch your journey unfold through meaningful places around the world and beyond.</p>
+                </div>
+                <span class="cx-key" title="Your note is encrypted with this session key before it leaves the page"><span class="cx-key-k">Key</span><span class="cx-key-v" id="keyFp">····&nbsp;····&nbsp;····&nbsp;····</span></span>
+              </header>
+
+              <div class="cx-field" id="noteField">
+                <div class="cx-prompt" aria-hidden="true"><span id="promptText"></span><i class="cx-caret"></i></div>
+                <textarea id="note" name="note" rows="4" maxlength="200" autocomplete="off" autocapitalize="sentences" spellcheck="false" aria-describedby="noteRule noteCountSr"></textarea>
+                <span class="cx-count" id="noteCount" aria-hidden="true">
+                  <svg class="cx-ring" viewBox="0 0 40 40"><circle class="ring-bg" cx="20" cy="20" r="17"/><circle class="ring-fg" id="ringFg" cx="20" cy="20" r="17" pathLength="200"/></svg>
+                  <b>200</b>
+                </span>
+                <p class="cx-warn" id="pasteWarn" aria-hidden="true">Paste blocked. Type it, every letter.</p>
+              </div>
+
+              <div class="cx-meta">
+                <span class="cx-start" aria-hidden="true"><i></i>Start typing to begin your journey</span>
+                <span class="cx-rule" id="noteRule">Typed by hand and encrypted in your browser. Copy and paste are off.</span>
+                <span class="cx-kbd" aria-hidden="true"><kbd id="kbdMod">Ctrl</kbd><kbd>Enter</kbd> to send</span>
+                <span class="sr-only" id="noteCountSr" aria-live="polite"></span>
+              </div>
+
+              <div class="cx-more" id="cxMore" inert><div class="cx-more-in">
+              <div class="cx-sealed" aria-hidden="true">
+                <span class="cx-sealed-k"><svg viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10" rx="1.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>Sealed</span>
+                <p class="cx-cipher" id="cipherOut"></p>
+              </div>
+              <div class="cx-route">
+                <button class="btn-key" type="submit" id="goBtn" disabled aria-label="Go. Encrypt and send this note.">
+                  <span class="key-cap">Go</span>
+                </button>
+              </div>
+              </div></div>
+            </div>
+
+            <div class="cx-face cx-back" hidden>
+              <div class="sent-lock" aria-hidden="true">
+                <svg viewBox="0 0 64 64"><rect x="12" y="28" width="40" height="28" rx="3"/><path class="shackle" d="M21 28v-8a11 11 0 0 1 22 0v8"/><path class="tick" d="M24 42l6 6 11-12"/></svg>
+              </div>
+              <div class="sent-body" aria-live="polite">
+                <p class="sent-status" id="sentStatus">Sealed and on its way</p>
+                <p class="sent-route"><span id="sentFrom">Here</span> to <span id="sentTo">there</span></p>
+                <p class="sent-cipher" id="sentQuote"></p>
+                <button class="btn-again" type="button" id="writeAnother">Write another note</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+
+    <!-- =========================== HOW IT WORKS =========================== -->
+    <section id="how" class="how" data-section>
+      <div class="wrap">
+        <h2 class="h2">How it works</h2>
+        <div class="route" id="route">
+          <svg class="route-svg" id="routeSvg" aria-hidden="true">
+            <defs><mask id="routeMask"><path id="routeReveal" fill="none" stroke="#fff" stroke-width="6"/></mask></defs>
+            <path id="routeGhost" class="route-ghost"/>
+            <path id="routeInk" class="route-ink" mask="url(#routeMask)"/>
+          </svg>
+          <div class="route-env" id="routeEnv" aria-hidden="true">
+            <span class="route-dot"></span>
+          </div>
+          <ol class="route-steps">
+            <li class="rstep">
+              <span class="rstep-n" aria-hidden="true">1</span>
+              <div><h3>Write Your Message</h3><p>Share a wish, memory, prayer, tribute, or a heartfelt note.</p></div>
+            </li>
+            <li class="rstep">
+              <span class="rstep-n" aria-hidden="true">2</span>
+              <div><h3>Choose Your Koin</h3><p>Select the Koin that best reflects your journey and unlocks exclusive destinations.</p></div>
+            </li>
+            <li class="rstep">
+              <span class="rstep-n" aria-hidden="true">3</span>
+              <div><h3>Select Your Destination</h3><p>Choose from carefully curated experiences, sacred places, landmarks, and destinations of meaning.</p></div>
+            </li>
+            <li class="rstep">
+              <span class="rstep-n" aria-hidden="true">4</span>
+              <div><h3>Experience Your Journey</h3><p>Watch your words come to life through a personalized experience and collect your digital keepsakes along the way.</p></div>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================== DESTINATIONS =========================== -->
+    <section id="destinations" class="dests" data-section>
+      <div class="wrap dests-head">
+        <h2 class="h2">Destinations</h2>
+        <div class="dests-tools">
+          <div class="dsearch" role="search">
+            <svg class="dsearch-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>
+            <label class="sr-only" for="destSearch">Search destinations and categories</label>
+            <input id="destSearch" type="search" placeholder="Search places, countries or categories" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-controls="destResults">
+            <button class="dsearch-clear" type="button" id="destSearchClear" aria-label="Clear search" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17"/></svg></button>
+          </div>
+          <p id="destsLede">Picked for you from <strong data-visitor-city>your town</strong>. Choose any place to see it here, then write to it.</p>
+          <ul class="dpicked" id="destPicked" aria-label="Your chosen destinations" hidden></ul>
+        </div>
+      </div>
+      <div class="wrap dfilters" id="destFilters" role="group" aria-label="Show a category"></div>
+
+      <article class="bill" id="bill" aria-live="polite">
+        <div class="bill-media" aria-hidden="true"><img id="billImg" alt="" decoding="async"></div>
+        <div class="wrap bill-copy">
+          <p class="bill-tag" id="billTag">Top pick near you</p>
+          <h3 class="bill-name" id="billName">Finding places near you</h3>
+          <ul class="bill-meta" id="billMeta"></ul>
+          <p class="bill-blurb" id="billBlurb"></p>
+          <div class="bill-actions">
+            <button class="btn-play" type="button" id="billWrite">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l3.6-1 11-11a2.1 2.1 0 0 0-3-3l-11 11L4 20Z"/><path d="M13.5 6.5l3 3"/></svg>
+              <span>Write a message here</span>
+            </button>
+            <button class="btn-next" type="button" id="billNext">
+              <span>Show another</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <section class="dresults" id="destResults" aria-live="polite" hidden>
+        <h3 class="drow-title" id="destResultsTitle"></h3>
+        <ul class="dgrid" id="destGrid"></ul>
+      </section>
+      <div class="drows" id="destRows"></div>
+    </section>
+
+    <!-- ============================= KOIN PLAN ============================= -->
+    <section id="plan" class="plan" data-section>
+      <div class="wrap">
+        <h2 class="h2 plan-title">Koin Plan</h2>
+
+        <div class="plan-group">
+        <header class="plan-group-head">
+          <h3>Choose the journey your words deserve.</h3>
+          <p>Each Koin opens the door to a unique collection of destinations.</p>
+          <p class="plan-cue" id="planCue" hidden>Your message is sealed. Choose the Koin that will carry it.</p>
+          </header>
+        <div class="plan-tear" aria-hidden="true"></div>
+
+        <div class="coupon coins">
+          <article class="cp" data-coin="copper">
+            <span class="coin" aria-hidden="true">K</span>
+            <h4>Copper Koin</h4>
+            <p class="cp-for">A Meaningful Beginning</p>
+            <p class="cp-price"><span class="cur">$</span><span class="amt">2.99</span></p>
+            <ul>
+              <li>Access to <strong>1 curated destination</strong></li>
+              <li>Perfect for a single meaningful message</li>
+              <li>A simple journey with lasting significance</li>
+            </ul>
+            <button class="btn-coupon" type="button" data-koin="copper" aria-pressed="false">Choose Copper</button>
+          </article>
+
+          <article class="cp" data-coin="silver">
+            <span class="coin" aria-hidden="true">K</span>
+            <h4>Silver Koin</h4>
+            <p class="cp-for">Expand the Journey</p>
+            <p class="cp-price"><span class="cur">$</span><span class="amt">6.99</span></p>
+            <ul>
+              <li>Access to <strong>4 curated destinations</strong></li>
+              <li>Explore multiple places of inspiration</li>
+              <li>Ideal for messages that deserve a broader path</li>
+            </ul>
+            <button class="btn-engraved" type="button" data-koin="silver" aria-pressed="false">Choose Silver</button>
+          </article>
+
+          <article class="cp" data-coin="gold">
+            <span class="coin" aria-hidden="true">K</span>
+            <h4>Gold Koin</h4>
+            <p class="cp-for">A Journey Across the World</p>
+            <p class="cp-price"><span class="cur">$</span><span class="amt">15.99</span></p>
+            <ul>
+              <li>Access to <strong>15 curated destinations</strong></li>
+              <li>Discover a rich collection of experiences</li>
+              <li>Designed for messages with greater reach</li>
+            </ul>
+            <button class="btn-press" type="button" data-koin="gold" aria-pressed="false">Choose Gold</button>
+          </article>
+
+          <article class="cp" data-coin="legend">
+            <span class="coin" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M3 18h18l-1.5-10-5 4.5L12 5l-2.5 7.5-5-4.5L3 18Z"/><path d="M3.5 21h17"/></svg>
+            </span>
+            <h4>Legend Koin</h4>
+            <p class="cp-for">The Ultimate Legacy</p>
+            <p class="cp-price"><span class="cur">$</span><span class="amt">59.99</span></p>
+            <ul>
+              <li>Access to all <strong>99 curated destinations</strong></li>
+              <li>Experience the most complete PaprKoin journey available</li>
+              <li>Designed for those seeking the most extraordinary journey</li>
+            </ul>
+            <button class="btn-legend" type="button" data-koin="legend" aria-pressed="false"><span>Choose Legend</span></button>
+          </article>
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============================== ABOUT =============================== -->
+    <section id="about" class="about" data-section>
+      <div class="wrap about-grid">
+        <h2 class="h2">About PaprKoin</h2>
+        <article class="letter">
+          <p class="letter-lead">PaprKoin was created for the moments that matter most.</p>
+          <p>In a world where messages are sent and forgotten within seconds, we offer a more meaningful way to preserve them. Whether it is a wish, a prayer, a memory, a tribute, or a message from the heart, PaprKoin transforms your words into a personalized journey connected to destinations that inspire wonder, reflection, and peace.</p>
+          <p>Every <span class="ink-stamp" id="inkStamp"><span class="ink-stamp-in">message</span></span> carries meaning. Every destination tells a story. Together, they create an experience designed to be remembered.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ================================ FAQ ================================ -->
+    <section id="faq" class="faq" data-section>
+      <div class="wrap faq-grid">
+        <div class="faq-head">
+          <h2 class="h2">Questions</h2>
+          <p>Something else on your mind? <a class="ink-link" href="#contact">Write to us</a>. We answer every note.</p>
+        </div>
+        <div class="faq-list">
+          <div class="qa">
+            <h3><button type="button" aria-expanded="false" aria-controls="qa1" id="qa1b">Why was PaprKoin created?<span class="qa-ico" aria-hidden="true"></span></button></h3>
+            <div class="qa-panel" id="qa1" role="region" aria-labelledby="qa1b"><div><p>We believe some words deserve more than a moment. PaprKoin was created to give meaningful messages a destination, a journey, and a lasting place to be remembered.</p></div></div>
+          </div>
+          <div class="qa">
+            <h3><button type="button" aria-expanded="false" aria-controls="qa2" id="qa2b">Is PaprKoin a physical coin?<span class="qa-ico" aria-hidden="true"></span></button></h3>
+            <div class="qa-panel" id="qa2" role="region" aria-labelledby="qa2b"><div><p>PaprKoin is a digital experience designed to connect meaningful words with curated destinations and lasting memories.</p></div></div>
+          </div>
+          <div class="qa">
+            <h3><button type="button" aria-expanded="false" aria-controls="qa7" id="qa7b">What will I get with PaprKoin?<span class="qa-ico" aria-hidden="true"></span></button></h3>
+            <div class="qa-panel" id="qa7" role="region" aria-labelledby="qa7b"><div><p>More than a message. Your words become a journey through destinations that matter, brought to life through immersive video experiences and lasting memories.</p></div></div>
+          </div>
+          <div class="qa">
+            <h3><button type="button" aria-expanded="false" aria-controls="qa3" id="qa3b">Are the destinations real places?<span class="qa-ico" aria-hidden="true"></span></button></h3>
+            <div class="qa-panel" id="qa3" role="region" aria-labelledby="qa3b"><div><p>Yes. The destinations featured within PaprKoin are inspired by real locations, landmarks, sacred places, and places of wonder from around the world and beyond.</p></div></div>
+          </div>
+          <div class="qa">
+            <h3><button type="button" aria-expanded="false" aria-controls="qa4" id="qa4b">Can I purchase more destinations later?<span class="qa-ico" aria-hidden="true"></span></button></h3>
+            <div class="qa-panel" id="qa4" role="region" aria-labelledby="qa4b"><div><p>Absolutely. Every new Koin unlocks a new journey, allowing you to create another message and explore a new collection of destinations.</p></div></div>
+          </div>
+          <div class="qa">
+            <h3><button type="button" aria-expanded="false" aria-controls="qa5" id="qa5b">Can I give a PaprKoin as a gift?<span class="qa-ico" aria-hidden="true"></span></button></h3>
+            <div class="qa-panel" id="qa5" role="region" aria-labelledby="qa5b"><div><p>Absolutely. PaprKoin is a meaningful gift for special messages, heartfelt wishes, birthdays, anniversaries, celebrations, and life&#8217;s memorable moments.</p></div></div>
+          </div>
+          <div class="qa">
+            <h3><button type="button" aria-expanded="false" aria-controls="qa6" id="qa6b">Why only 200 characters?<span class="qa-ico" aria-hidden="true"></span></button></h3>
+            <div class="qa-panel" id="qa6" role="region" aria-labelledby="qa6b"><div><p>It&#8217;s long enough for something true and short enough to finish in one sitting.</p></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== CONTACT ============================== -->
+    <section id="contact" class="contact" data-section>
+      <div class="wrap contact-grid">
+        <div class="contact-copy">
+          <h2 class="h2">Write to us</h2>
+          <p>Partnerships, press, a city you'd like us to add, or just hello. A person reads every message.</p>
+          <button class="btn-tag" type="button" id="copyEmail" data-email="hello@paprkoin.com">
+            <span class="tag-hole" aria-hidden="true"></span>
+            <span class="tag-text">hello@paprkoin.com</span>
+            <span class="tag-hint" id="copyStatus" aria-live="polite">Copy</span>
+          </button>
+        </div>
+
+        <form class="contact-form" id="contactForm" novalidate>
+          <div class="field">
+            <label for="cName">Your name</label>
+            <input id="cName" name="name" type="text" autocomplete="name" required>
+            <p class="field-err" id="cNameErr"></p>
+          </div>
+          <div class="field">
+            <label for="cEmail">Email address</label>
+            <input id="cEmail" name="email" type="email" autocomplete="email" inputmode="email" required>
+            <p class="field-err" id="cEmailErr"></p>
+          </div>
+          <div class="field">
+            <label for="cMsg">Message</label>
+            <textarea id="cMsg" name="message" rows="4" required></textarea>
+            <p class="field-err" id="cMsgErr"></p>
+          </div>
+          <button class="btn-envelope" type="submit"><span class="env-flap" aria-hidden="true"></span><span class="env-text">Send message</span></button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================== FOOTER ============================== -->
+  <footer class="footer">
+    <div class="ft-airmail" aria-hidden="true"></div>
+    <div class="wrap">
+
+      <div class="ft-top">
+        <!-- who we are, and the one thing to do next -->
+        <div class="ft-brand">
+          <a href="#home" class="ft-logo" aria-label="PaprKoin, back to top">
+            <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="21" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="24" cy="24" r="16" fill="none" stroke="currentColor" stroke-width="1"/><path d="M19 32V16h6.2a4.6 4.6 0 0 1 0 9.2H19" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 30c4-2 6 2 10 0M36 30c4-2 6 2 10 0" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <span>PaprKoin</span>
+          </a>
+          <p class="ft-pitch">Words that travel. Write up to 200 characters, choose a Koin, and send them to the places that matter.</p>
+          <button class="ft-write" type="button" data-write>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l3.6-1 11-11a2.1 2.1 0 0 0-3-3l-11 11L4 20Z"/><path d="M13.5 6.5l3 3"/></svg>
+            <span>Write a message</span>
+          </button>
+          <p class="ft-promise">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="1.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>
+            Typed by hand and encrypted in your browser before it leaves the page.
+          </p>
+        </div>
+
+        <!-- the Koin rate card: what each Koin carries -->
+        <section class="ft-rates" aria-labelledby="ftRatesTitle">
+          <h2 class="ft-h" id="ftRatesTitle">Koin rates</h2>
+          <ul>
+            <li><button type="button" data-koin="copper"><i class="ft-coin" data-metal="copper" aria-hidden="true"></i><b>Copper</b><span>1 destination</span><em>$2.99</em></button></li>
+            <li><button type="button" data-koin="silver"><i class="ft-coin" data-metal="silver" aria-hidden="true"></i><b>Silver</b><span>4 destinations</span><em>$6.99</em></button></li>
+            <li><button type="button" data-koin="gold"><i class="ft-coin" data-metal="gold" aria-hidden="true"></i><b>Gold</b><span>15 destinations</span><em>$15.99</em></button></li>
+            <li><button type="button" data-koin="legend"><i class="ft-coin" data-metal="legend" aria-hidden="true"></i><b>Legend</b><span>Every destination</span><em>$59.99</em></button></li>
+          </ul>
+          <p class="ft-note">Every Koin is also a gift. Send one for a birthday, an anniversary, or a goodbye.</p>
+        </section>
+
+        <!-- one email when new places arrive -->
+        <form class="ft-news" id="ftNews" novalidate>
+          <h2 class="ft-h" id="ftNewsTitle">New destinations</h2>
+          <p>One short email when we add new places to send your words. Nothing else.</p>
+          <div class="ft-field">
+            <label class="sr-only" for="ftEmail">Email address</label>
+            <input id="ftEmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" aria-describedby="ftNewsTitle ftEmailErr">
+            <button type="submit">Notify me</button>
+          </div>
+          <p class="field-err" id="ftEmailErr"></p>
+        </form>
+      </div>
+
+      <nav class="ft-cols" aria-label="Footer">
+        <div>
+          <h2 class="ft-h">Journey</h2>
+          <ul>
+            <li><a href="#how">How it works</a></li>
+            <li><a href="#destinations">Destinations</a></li>
+            <li><a href="#plan">Koin Plan</a></li>
+            <li><button type="button" class="ft-a" data-write>Write a message</button></li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="ft-h">PaprKoin</h2>
+          <ul>
+            <li><a href="#about">About PaprKoin</a></li>
+            <li><a href="#plan">Gift a Koin</a></li>
+            <li><a href="#contact">Partnerships and press</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="ft-h">Help</h2>
+          <ul>
+            <li><a href="#faq">Questions</a></li>
+            <li><a href="#contact">Contact us</a></li>
+            <li><a href="mailto:hello@paprkoin.com">hello@paprkoin.com</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="ft-h">Legal</h2>
+          <ul>
+            <li><a href="#">Privacy policy</a></li>
+            <li><a href="#">Terms of service</a></li>
+            <li><a href="#">Refunds</a></li>
+            <li><a href="#">Cookie settings</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- signature: the wordmark, cancelled with a postmark from the visitor's town -->
+      <div class="ft-sign" aria-hidden="true">
+        <p class="ft-word">PaprKoin</p>
+        <svg class="ft-postmark" viewBox="0 0 120 120">
+          <defs><path id="ftRing" d="M60 60m-41 0a41 41 0 1 1 82 0a41 41 0 1 1-82 0"/></defs>
+          <g class="pm-ink">
+            <circle class="pm-o" cx="60" cy="60" r="55"/><circle class="pm-i" cx="60" cy="60" r="29"/>
+            <text><textPath href="#ftRing" textLength="250" data-postmark-text>SENT FROM YOUR TOWN</textPath></text>
+            <g class="pm-logo" transform="translate(42 42) scale(.75)"><circle cx="24" cy="24" r="21"/><circle cx="24" cy="24" r="16" class="pm-thin"/><path d="M19 32V16h6.2a4.6 4.6 0 0 1 0 9.2H19" class="pm-p"/><path d="M2 30c4-2 6 2 10 0M36 30c4-2 6 2 10 0" class="pm-thin"/></g>
+          </g>
+          <path class="ft-waves" d="M122 48c10-6 18 6 28 0s18-6 28 0 18 6 28 0M122 60c10-6 18 6 28 0s18-6 28 0 18 6 28 0M122 72c10-6 18 6 28 0s18-6 28 0 18 6 28 0"/>
+        </svg>
+      </div>
+
+      <div class="ft-bottom">
+        <p class="ft-legal">© 2026 PaprKoin. Every note typed by hand.</p>
+        <ul class="ft-social" aria-label="PaprKoin elsewhere">
+          <li><a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" class="fill"/></svg></a></li>
+          <li><a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10 9.2v5.6l4.8-2.8L10 9.2Z" class="fill"/></svg></a></li>
+          <li><a href="#" aria-label="TikTok"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3.5v11.2a3.8 3.8 0 1 1-3.8-3.8"/><path d="M14 3.5c.4 2.6 2.2 4.4 5 4.6"/></svg></a></li>
+          <li><a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.6-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.2H8.9v3h2.6V21"/></svg></a></li>
+        </ul>
+        <button class="btn-plane" type="button" id="toTop">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 15 29 4 22 28l-6-9-13-4Z"/><path d="M16 19 29 4"/></svg>
+          <span>Back to top</span>
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============================ AUTH DIALOG ============================ -->
+  <dialog class="auth" id="authDialog" aria-labelledby="authTitle">
+    <div class="auth-card">
+      <aside class="auth-art" aria-hidden="true">
+        <div class="aa-brand">
+          <svg class="brand-mark" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="24" cy="24" r="16" fill="none" stroke="currentColor" stroke-width="1"/><path d="M19 32V16h6.2a4.6 4.6 0 0 1 0 9.2H19" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>PaprKoin</span>
+        </div>
+        <svg class="aa-globe" id="miniGlobe" viewBox="0 0 260 260"></svg>
+        <p class="aa-quote">Every <span class="aa-word">message<svg class="aa-postmark" id="aaStamp" viewBox="0 0 120 120">
+            <defs><path id="aaRing" d="M60 60m-41 0a41 41 0 1 1 82 0a41 41 0 1 1-82 0"/></defs>
+            <g class="pm-ink">
+              <circle class="pm-o" cx="60" cy="60" r="55"/><circle class="pm-i" cx="60" cy="60" r="29"/>
+              <text><textPath href="#aaRing" id="aaPostmark" textLength="250">SENT FROM YOUR TOWN</textPath></text>
+              <g class="pm-logo" transform="translate(42 42) scale(.75)"><circle cx="24" cy="24" r="21"/><circle cx="24" cy="24" r="16" class="pm-thin"/><path d="M19 32V16h6.2a4.6 4.6 0 0 1 0 9.2H19" class="pm-p"/><path d="M2 30c4-2 6 2 10 0M36 30c4-2 6 2 10 0" class="pm-thin"/></g>
+            </g>
+          </svg></span><br>carries meaning. Every destination tells a story.</p>
+      </aside>
+
+      <div class="auth-main">
+        <button class="auth-close" type="button" aria-label="Close" data-close>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+        <h2 class="auth-title" id="authTitle">Welcome back!</h2>
+        <p class="auth-sub" id="authSub">Pick up where your words left off.</p>
+        <p class="auth-with">Continue with</p>
+        <div class="auth-social">
+          <button class="btn-provider is-google" type="button" data-provider="Google" aria-label="Continue with Google">
+            <span class="bp-face">
+              <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.4-.4-3.5Z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7Z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44Z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5Z"/></svg>
+              <span>Google</span>
+            </span>
+          </button>
+          <button class="btn-provider is-facebook" type="button" data-provider="Facebook" aria-label="Continue with Facebook">
+            <span class="bp-face">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M24 12a12 12 0 1 0-13.9 11.9v-8.4H7.1V12h3V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.9V12h3.4l-.5 3.5h-2.9v8.4A12 12 0 0 0 24 12Z"/></svg>
+              <span>Facebook</span>
+            </span>
+          </button>
+        </div>
+        <p class="auth-hint" id="authHint">New here? Google and Facebook create your account as you sign in.</p>
+        <p class="auth-or"><span>or use your email</span></p>
+
+        <form class="auth-form" id="authForm" aria-labelledby="authTitle" novalidate>
+          <p class="auth-note" id="authNote" role="status" hidden></p>
+          <div class="field signup-only" id="nameField">
+            <label for="aName">Your name</label>
+            <input id="aName" name="name" type="text" autocomplete="name">
+            <p class="field-err" id="aNameErr"></p>
+          </div>
+          <div class="field">
+            <label for="aEmail">Email address</label>
+            <input id="aEmail" name="email" type="email" autocomplete="email" inputmode="email" required>
+            <p class="field-err" id="aEmailErr"></p>
+          </div>
+          <div class="field has-toggle">
+            <div class="field-row">
+              <label for="aPass">Password</label>
+              <button type="button" class="auth-forgot signin-only" id="forgotBtn">Forgot password?</button>
+            </div>
+            <input id="aPass" name="password" type="password" autocomplete="current-password" required minlength="8">
+            <button class="pass-toggle" type="button" aria-label="Show password" aria-pressed="false">Show</button>
+            <p class="field-err" id="aPassErr"></p>
+          </div>
+          <button class="btn-post" type="submit"><span class="bpo-label" id="authSubmitLabel">Sign in</span><span class="bpo-stamp" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="6" width="17" height="12" rx="1.5"/><path d="M4 7l8 6 8-6"/></svg></span></button>
+          <p class="auth-terms signup-only">By creating an account you agree to the <a class="ink-link" href="#">Terms</a> and <a class="ink-link" href="#">Privacy Policy</a>.</p>
+          <p class="auth-foot"><span class="signin-only">New to PaprKoin? <button type="button" class="link-quill" data-mode="signup"><span>Create an account</span><svg viewBox="0 0 120 10" preserveAspectRatio="none" aria-hidden="true"><path d="M2 6c14-5 24 3 38-1s22-3 36 1 24-3 42-1"/></svg></button></span><span class="signup-only">Already have an account? <button type="button" class="link-quill" data-mode="signin"><span>Sign in</span><svg viewBox="0 0 120 10" preserveAspectRatio="none" aria-hidden="true"><path d="M2 6c14-5 24 3 38-1s22-3 36 1 24-3 42-1"/></svg></button></span></p>
+        </form>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ============================== CHECKOUT ============================== -->
+  <dialog class="checkout" id="checkout" aria-labelledby="coTitle">
+    <div class="co-card">
+      <aside class="co-summary" aria-label="Your journey">
+        <h3 class="co-h">Your journey</h3>
+        <div class="co-koin">
+          <i class="ft-coin" data-metal="silver" aria-hidden="true"></i>
+          <div><b id="coKoin">Silver Koin</b><span id="coCount">4 destinations</span></div>
+          <em id="coPrice">$6.99</em>
+        </div>
+        <div class="co-route">
+          <p class="co-from"><span>From</span> <b id="coFrom">your town</b></p>
+          <ol class="co-dests" id="coDests"></ol>
+        </div>
+        <figure class="co-note">
+          <blockquote id="coNote"></blockquote>
+          <figcaption><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="1.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>Sealed in your browser</figcaption>
+        </figure>
+        <p class="co-total"><span>Total</span><b id="coTotal">$6.99</b></p>
+      </aside>
+
+      <div class="co-main">
+        <button class="auth-close" type="button" aria-label="Close checkout" data-co-close>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+        <form class="co-form" id="coForm" novalidate>
+          <h2 class="auth-title" id="coTitle">Checkout</h2>
+          <p class="auth-sub">Pay once. Your words set off the moment it’s done.</p>
+          <p class="co-demo" id="coDemo">Test mode: no payment is taken and no card details are asked for.</p>
+          <div class="field">
+            <label for="coName">Name on your certificate</label>
+            <input id="coName" name="name" type="text" autocomplete="name" required>
+            <p class="field-err"></p>
+          </div>
+          <div class="field">
+            <label for="coEmail">Email for your receipt</label>
+            <input id="coEmail" name="email" type="email" inputmode="email" autocomplete="email" required>
+            <p class="field-err"></p>
+          </div>
+          <button class="btn-pay" type="submit" id="coPay">
+            <span>Pay $6.99</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="1.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>
+          </button>
+          <p class="co-secure" id="coSecure"></p>
+          <ul class="co-methods" aria-label="Accepted payment methods">
+            <li>Visa</li><li>Mastercard</li><li>Amex</li><li>Apple Pay</li><li>Google Pay</li>
+          </ul>
+        </form>
+
+        <div class="co-done" id="coDone" role="status" hidden>
+          <svg class="co-paid" viewBox="0 0 120 120" aria-hidden="true">
+            <defs><path id="coRing" d="M60 60m-41 0a41 41 0 1 1 82 0a41 41 0 1 1-82 0"/></defs>
+            <g class="pm-ink">
+              <circle class="pm-o" cx="60" cy="60" r="55"/><circle class="pm-i" cx="60" cy="60" r="29"/>
+              <text><textPath href="#coRing" textLength="250">PAID · PAPRKOIN · PAID · PAPRKOIN ·</textPath></text>
+              <path class="co-tick" d="M46 61l10 10 19-21"/>
+            </g>
+          </svg>
+          <h3>Payment received</h3>
+          <p id="coOrder">Order</p>
+          <p class="co-next">Sending your words now. Your journey opens in a moment.</p>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <svg class="svg-defs" width="0" height="0" aria-hidden="true" focusable="false">
+    <filter id="inkWorn" x="-10%" y="-20%" width="120%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="2" seed="11" result="grain"/>
+      <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.4 2.25" result="holes"/>
+      <feComposite in="SourceGraphic" in2="holes" operator="in" result="worn"/>
+      <feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="2" seed="4" result="warp"/>
+      <feDisplacementMap in="worn" in2="warp" scale="3" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </svg>
+  <aside class="jtray" id="jtray" aria-label="Your journey" hidden>
+    <ol class="jt-steps">
+      <li data-step="message" data-state="todo"><i aria-hidden="true"></i><span>Message</span></li>
+      <li data-step="koin" data-state="todo"><i aria-hidden="true"></i><span id="jtKoin">Koin</span></li>
+      <li data-step="dest" data-state="todo"><i aria-hidden="true"></i><span id="jtDest">Destinations</span></li>
+    </ol>
+    <p class="jt-msg" id="jtMsg" aria-live="polite"></p>
+    <div class="jt-actions">
+      <button class="jt-link" type="button" id="jtChange" hidden>Change Koin</button>
+      <button class="btn-send" type="button" id="jtSend" disabled>
+        <span>Send my message</span>
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 15 29 4 22 28l-6-9-13-4Z"/><path d="M16 19 29 4"/></svg>
+      </button>
+    </div>
+    <button class="jt-cancel" type="button" id="jtCancel" aria-label="Clear this journey"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17"/></svg></button>
+  </aside>
+
+  <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+  <script type="module" src="js/main.js?v=82"></script>
+</body>
+</html>
